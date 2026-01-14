@@ -1,0 +1,6 @@
+.env
+.venv
+.gemini
+__pycache__
+test
+js MCP
