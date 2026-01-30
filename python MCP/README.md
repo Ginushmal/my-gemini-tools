@@ -31,5 +31,28 @@ to test for errors , full cmd command :
 uv run --with fastmcp --with pandas --with openpyxl fastmcp run "D:\my-gemini-tools\python MCP\server.py"
 ```
 
+add this as the MCP server
+
+```
+    "MyFirstMCPServer": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "fastmcp",
+        "--with",
+        "pandas",
+        "--with",
+        "openpyxl",
+        "--with",
+        "xlrd",
+        "fastmcp",
+        "run",
+        "D:\\my-gemini-tools\\python MCP\\server.py"
+      ]
+    },
+
+```
+
 guid :
 [Building your own MCP Server](https://medium.com/google-cloud/gemini-cli-tutorial-series-part-8-building-your-own-mcp-server-74d6add81cca)
