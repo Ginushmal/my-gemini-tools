@@ -54,5 +54,82 @@ add this as the MCP server
 
 ```
 
+My setting.json file for GEMINI cli
+
+```
+{
+  "mcpServers": {
+    "MyFirstMCPServer": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "fastmcp",
+        "--with",
+        "pandas",
+        "--with",
+        "openpyxl",
+        "--with",
+        "xlrd",
+        "fastmcp",
+        "run",
+        "D:\\my-gemini-tools\\python MCP\\server.py"
+      ]
+    },
+	"context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "env": {
+        "CONTEXT7_API_KEY": "APIKEY"
+      }
+    },
+    "notionMCP": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.notion.com/mcp"
+      ]
+    }
+  },
+  "general": {
+    "checkpointing": {
+      "enabled": true
+    },
+    "preferredEditor": "vscode",
+    "vimMode": false,
+    "previewFeatures": true
+  },
+  "ide": {
+    "hasSeenNudge": true,
+    "enabled": true
+  },
+  "security": {
+    "auth": {
+      "selectedType": "oauth-personal"
+    }
+  },
+  "ui": {
+    "theme": "Default",
+    "showMemoryUsage": true,
+    "footer": {
+      "hideContextPercentage": false
+    }
+  },
+  "output": {
+    "format": "text"
+  },
+  "tools": {
+    "shell": {
+      "showColor": true
+    }
+  }
+}
+
+```
+
 guid :
 [Building your own MCP Server](https://medium.com/google-cloud/gemini-cli-tutorial-series-part-8-building-your-own-mcp-server-74d6add81cca)
