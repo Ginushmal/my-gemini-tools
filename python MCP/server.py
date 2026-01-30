@@ -148,6 +148,7 @@ def add_day_end_summary(input_date: str) -> str:
     else:
         formatted_date = input_date
     return (
+        "**IMPORTANT**: Ensure you navigate to the correct project root folder before running any git commands. The CLI might be opened from an outer parent folder.\n\n"
         f"Use the git commands to get all the diffs i have made to the current project on {formatted_date}, and all the commits i have made on {formatted_date}(and their changes)."
         "make sure to only consider the .java and .jsp file updates and ignore all other file types. " 
         "get all the logs"
@@ -164,6 +165,7 @@ def add_day_end_summary(input_date: str) -> str:
 @mcp.prompt
 def generate_commit_message() -> str:
     return (
+    "**IMPORTANT**: Ensure you navigate to the correct project root folder before running any git commands. The CLI might be opened from an outer parent folder.\n\n"
     f"Please generate a Conventional Commit message and a description for it based on the following git diff. The commit message should include 'feature :' as a prefix if the task I'm working on is a feature, or 'fix :' prefix if it is a bug fix. Ignore the .md files in the diff and any files that are in the .gemini folder; only consider the changes done to *.java , *.sql , *.prc files and *.jsp files (Ignore the BACKOFFICE.sql file tho). "
     "The description should be concise and point-wise without a hierarchical structure, highlight the main changes made after the last commit, and include all and every change made in the diff. Do not leave anything out. Include what you did and how you did it too in the description.\n\n"
     "DIFF FILES:\n"
@@ -175,6 +177,7 @@ def generate_commit_message() -> str:
 @mcp.prompt
 def check_task_completion(task_id: str) -> str:
     return (
+        "**IMPORTANT**: Ensure you navigate to the correct project root folder before running any git commands. The CLI might be opened from an outer parent folder.\n\n"
         f"Perform a final verification for Item #{task_id}. First, retrieve the item description and requirements using the 'get_work_item_with_attachments' tool.\n"
         "Next, review the list of ALL modified and new files below (including staged, unstaged, and untracked files):\n\n"
         "MODIFIED & NEW FILES:\n"
@@ -182,7 +185,7 @@ def check_task_completion(task_id: str) -> str:
         "!{git diff HEAD --name-only}\n"
         # 2. Untracked (new) files
         "!{git ls-files --others --exclude-standard}\n\n"
-        "From this combined output, filter and select **only** source code files (e.g., .java, .sql) related to the project. "
+        "From this combined output, filter and select **only** source code files (e.g., .java, .sql ,ect.) related to the project. "
         "Strictly **ignore** build artifacts (like .class, .jar), logs, documents, or IDE configuration files (like .settings, .project, .classpath).\n"
         "For each valid source file you identified:\n"
         "   - If it is modified, read changes using `git diff HEAD <filename>`.\n"
@@ -192,6 +195,78 @@ def check_task_completion(task_id: str) -> str:
         "1. Confirmation of completed requirements.\n"
         "2. Any missing implementations or logic gaps.\n"
         "3. Specific suggestions for code improvements."
+    )
+
+@mcp.prompt
+def check_task_completion_with_description(task_description: str) -> str:
+    return (
+        "**IMPORTANT**: Ensure you navigate to the correct project root folder before running any git commands. The CLI might be opened from an outer parent folder.\n\n"
+        f"Perform a final verification for the following task:\n\n"
+        f"TASK DESCRIPTION:\n{task_description}\n\n"
+        "Review the list of ALL modified and new files below (including staged, unstaged, and untracked files):\n\n"
+        "MODIFIED & NEW FILES:\n"
+        # 1. Staged/Unstaged modified files
+        "!{git diff HEAD --name-only}\n"
+        # 2. Untracked (new) files
+        "!{git ls-files --others --exclude-standard}\n\n"
+        "From this combined output, filter and select **only** source code files (e.g., .java, .sql ,ect.) related to the project. "
+        "Strictly **ignore** build artifacts (like .class, .jar), logs, documents, or IDE configuration files (like .settings, .project, .classpath).\n"
+        "For each valid source file you identified:\n"
+        "   - If it is modified, read changes using `git diff HEAD <filename>`.\n"
+        "   - If it is a NEW (untracked) file, read the whole file content (since it has no diff history yet).\n"
+        "Compare the code implementation in these files against the task requirements provided above to verify if the task is fully completed.\n"
+        "Finally, provide a full report detailing:\n"
+        "1. Confirmation of completed requirements.\n"
+        "2. Any missing implementations or logic gaps.\n"
+        "3. Specific suggestions for code improvements."
+    )
+
+@mcp.prompt
+def review_pr(task_id: str, source_branch: str, target_branch: str) -> str:
+    return (
+        "**IMPORTANT**: Ensure you navigate to the correct project root folder before running any git commands. The CLI might be opened from an outer parent folder.\n\n"
+        f"Perform a comprehensive Pull Request review for Item #{task_id}.\n\n"
+        f"First, retrieve the item description and requirements using the 'get_work_item_with_attachments' tool.\n\n"
+        f"Then, review the changes between the target branch '{target_branch}' and source branch '{source_branch}' using the following git commands:\n\n"
+        "CHANGED FILES:\n"
+        f"!{{git diff {target_branch}...{source_branch} --name-only}}\n\n"
+        "DIFF CONTENT:\n"
+        f"!{{git diff {target_branch}...{source_branch}}}\n\n"
+        "From the diff output, filter and focus **only** on source code files (e.g., .java, .sql, .jsp , ect.) related to the project. "
+        "Strictly **ignore** build artifacts (like .class, .jar), logs, documents, or IDE configuration files (like .settings, .project, .classpath).\n\n"
+        f"Compare the code changes against the requirements of Item #{task_id} and provide a comprehensive PR review covering:\n"
+        "1. **Requirements Verification**: Confirm that all requirements are implemented correctly.\n"
+        "2. **Code Quality**: Assess code structure, readability, and adherence to best practices.\n"
+        "3. **Potential Issues**: Identify any bugs, logic errors, or edge cases not handled.\n"
+        "4. **Security Concerns**: Point out any security vulnerabilities or risks.\n"
+        "5. **Performance**: Highlight any performance issues or inefficiencies.\n"
+        "6. **Testing**: Verify if adequate test coverage exists for the changes.\n"
+        "7. **Suggestions**: Provide specific, actionable suggestions for improvements.\n\n"
+        "Format your review with clear sections and prioritize critical issues first."
+    )
+
+@mcp.prompt
+def review_pr_with_description(task_description: str, source_branch: str, target_branch: str) -> str:
+    return (
+        "**IMPORTANT**: Ensure you navigate to the correct project root folder before running any git commands. The CLI might be opened from an outer parent folder.\n\n"
+        f"Perform a comprehensive Pull Request review for the following task:\n\n"
+        f"TASK DESCRIPTION:\n{task_description}\n\n"
+        f"Review the changes between the target branch '{target_branch}' and source branch '{source_branch}' using the following git commands:\n\n"
+        "CHANGED FILES:\n"
+        f"!{{git diff {target_branch}...{source_branch} --name-only}}\n\n"
+        "DIFF CONTENT:\n"
+        f"!{{git diff {target_branch}...{source_branch}}}\n\n"
+        "From the diff output, filter and focus **only** on source code files (e.g., .java, .sql, .jsp , ect.) related to the project. "
+        "Strictly **ignore** build artifacts (like .class, .jar), logs, documents, or IDE configuration files (like .settings, .project, .classpath).\n\n"
+        "Compare the code changes against the task requirements provided above and provide a comprehensive PR review covering:\n"
+        "1. **Requirements Verification**: Confirm that all requirements are implemented correctly.\n"
+        "2. **Code Quality**: Assess code structure, readability, and adherence to best practices.\n"
+        "3. **Potential Issues**: Identify any bugs, logic errors, or edge cases not handled.\n"
+        "4. **Security Concerns**: Point out any security vulnerabilities or risks.\n"
+        "5. **Performance**: Highlight any performance issues or inefficiencies.\n"
+        "6. **Testing**: Verify if adequate test coverage exists for the changes.\n"
+        "7. **Suggestions**: Provide specific, actionable suggestions for improvements.\n\n"
+        "Format your review with clear sections and prioritize critical issues first."
     )
 
 
