@@ -15,11 +15,6 @@ except ImportError:
 
 mcp = FastMCP(name="MyMCPServer")
 
-@mcp.tool
-def greet(name:str) -> str:
-    """Returns a friendly greeting"""
-    return f"Hello {name}! Its a pleasure to connect from your first MCP Server."
-
 
 @mcp.tool
 def excel_to_csv_string(file_path: str) -> str:
@@ -208,11 +203,8 @@ def check_task_completion(task_id: str) -> str:
         "For each valid source file you identified:\n"
         "   - If it is modified, read changes using `git diff HEAD <filename>`.\n"
         "   - If it is a NEW (untracked) file, read the whole file content (since it has no diff history yet).\n"
-        f"Compare the code implementation in these files against the requirements of Item #{task_id} to verify if the task is fully completed.\n"
-        "Finally, provide a full report detailing:\n"
-        "1. Confirmation of completed requirements.\n"
-        "2. Any missing implementations or logic gaps.\n"
-        "3. Specific suggestions for code improvements."
+        "Compare the code implementation in these files against the requirements of Item #{task_id} and provide a comprehensive review and task completion verification adhering to the following guidelines:\n\n"
+        f"{COMMON_REVIEW_PROMPT}"
     )
 
 @mcp.prompt
@@ -232,32 +224,30 @@ def check_task_completion_with_description(task_description: str) -> str:
         "For each valid source file you identified:\n"
         "   - If it is modified, read changes using `git diff HEAD <filename>`.\n"
         "   - If it is a NEW (untracked) file, read the whole file content (since it has no diff history yet).\n"
-        "Compare the code implementation in these files against the task requirements provided above to verify if the task is fully completed.\n"
-        "Finally, provide a full report detailing:\n"
-        "1. Confirmation of completed requirements.\n"
-        "2. Any missing implementations or logic gaps.\n"
-        "3. Specific suggestions for code improvements."
+        "Compare the code implementation in these files against the task requirements provided above and provide a comprehensive review and task completion verification adhering to the following guidelines:\n\n"
+        f"{COMMON_REVIEW_PROMPT}"
     )
 
-COMMON_PR_REVIEW_PROMPT = (
+COMMON_REVIEW_PROMPT = (
     "## Role\n"
     "You are a world-class autonomous code review agent. Your analysis is precise, your feedback is constructive, and your adherence to instructions is absolute.\n\n"
     "## Primary Directive\n"
-    "Perform a comprehensive code review based on the provided diffs and requirements. All output must be formatted as a complete review report.\n\n"
+    "Perform a comprehensive code review based on the provided diffs and requirements. All output must be formatted as a complete review report, which includes both a detailed PR/Code review and a Task Completion Verification.\n\n"
     "## Critical Constraints\n"
-    "1. **Scope Limitation:** You **MUST** only provide comments or proposed changes on lines that are part of the changes in the diff (lines beginning with `+` or `-`). Comments on unchanged context lines are strictly forbidden.\n"
+    "1. **Scope Limitation:** You **MUST** only provide comments or proposed changes on lines that are part of the changes in the diff (lines beginning with `+` or `-` or newly added files). Comments on unchanged context lines are strictly forbidden.\n"
     "2. **Fact-Based Review:** You **MUST** only add a review comment or suggested edit if there is a verifiable issue, bug, or concrete improvement based on the review criteria. **DO NOT** add comments that ask the author to \"check,\" \"verify,\" or \"confirm\" something. **DO NOT** add comments that simply explain or validate what the code does.\n"
     "3. **Contextual Correctness:** All line numbers and indentations in code suggestions **MUST** be correct and match the code they are replacing. Code suggestions need to align **PERFECTLY** with the code it intends to replace.\n\n"
     "## Execution Workflow\n"
     "Follow this process sequentially:\n\n"
     "### Step 1: Data Gathering and Analysis\n"
     "1. Parse the provided requirements and task description.\n"
-    "2. Review the code provided in the DIFF CONTENT according to the Review Criteria.\n\n"
+    "2. Review the code provided in the DIFF CONTENT according to the Review Criteria.\n"
     "3. Read the whole files if needed other than the diff to understand the context but do not comment on any line that is not part of the diff.\n"
+    "4. Compare the code implementation against the task requirements to verify if the task is fully completed or if there are any missing points.\n\n"
     "### Step 2: Formulate Review Comments\n"
     "For each identified issue, formulate a review comment adhering to the following guidelines.\n\n"
     "**Review Criteria (in order of priority)**\n"
-    "1. **Correctness:** Logic errors, edge cases, race conditions, incorrect API usage, data validation.\n"
+    "1. **Task Completion & Correctness:** Are all task requirements fully implemented? Are there missing implementations or logic gaps? Logic errors, edge cases, race conditions, incorrect API usage, data validation.\n"
     "2. **Security:** Vulnerabilities, injection attacks, insecure data storage, access controls, secrets exposure.\n"
     "3. **Efficiency:** Performance bottlenecks, unnecessary computations, memory leaks.\n"
     "4. **Maintainability:** Readability, modularity, language idioms, style guides.\n"
@@ -276,13 +266,11 @@ COMMON_PR_REVIEW_PROMPT = (
     "**Severity Levels (Mandatory)**\n"
     "You **MUST** assign a severity level to every comment:\n"
     "- `🔴` Critical: Causes production failure, security breach, etc. MUST fix.\n"
-    "- `🟠` High: Significant problems, bugs, or performance degradation. Should fix.\n"
-    "- `🟡` Medium: Deviation from best practices, technical debt.\n"
+    "- `🟠` High: Significant problems, bugs, missing core requirements, or performance degradation. Should fix.\n"
+    "- `🟡` Medium: Deviation from best practices, technical debt, minor missing requirement.\n"
     "- `🟢` Low: Minor or stylistic (typos, docs, formatting).\n\n"
-    "**Severity Rules**\n"
-    "- Typos, docs, hardcoded strings, test implementation, markdown files: Low/Medium.\n\n"
     "### Step 3: Output the Review\n"
-    "Present your review using the following structure. First, list all your targeted comments, then provide a general summary.\n\n"
+    "Present your review using the following structure. First, list all your targeted comments, then provide a Task Completion Verification, and finally a general summary.\n\n"
     "For each specific issue found in the diff, use this format:\n"
     "<COMMENT>\n"
     "**File:** `[filename]`\n"
@@ -292,12 +280,15 @@ COMMON_PR_REVIEW_PROMPT = (
     "```\n"
     "</COMMENT>\n"
     "*(Note: Omit the suggestion block if there is no code change to suggest. Clearly state which file and lines the comment applies to.)*\n\n"
-    "Finally, end your output with a summary comment:\n"
+    "Finally, end your output with a Task Completion Report and a Summary comment:\n"
     "<SUMMARY>\n"
+    "## ✅ Task Completion Verification\n"
+    "- **Requirements Met:** A detailed confirmation of the completed requirements.\n"
+    "- **Missing Implementations:** Any missed points, missing implementations, or logic gaps compared to the task description.\n\n"
     "## 📋 Review Summary\n"
     "A brief, high-level assessment of the changes' objective and quality (2-3 sentences).\n\n"
     "## 🔍 General Feedback\n"
-    "- A bulleted list of general observations, positive highlights, or recurring patterns not suitable for inline comments.\n"
+    "- A bulleted list of general observations, positive highlights, code improvements, or recurring patterns not suitable for inline comments.\n"
     "- Keep this section concise and do not repeat details already covered in inline comments.\n"
     "</SUMMARY>"
 )
@@ -315,25 +306,46 @@ def review_pr(task_id: str, source_branch: str, target_branch: str) -> str:
         f"!{{git diff {target_branch}...{source_branch}}}\n\n"
         "From the diff output, filter and focus **only** on source code files (e.g., .java, .sql, .jsp , ect.) related to the project. "
         "Strictly **ignore** build artifacts (like .class, .jar), logs, documents, or IDE configuration files (like .settings, .project, .classpath).\n\n"
-        f"Compare the code changes against the requirements of Item #{task_id} and provide a comprehensive PR review adhering to the following guidelines:\n\n"
-        f"{COMMON_PR_REVIEW_PROMPT}"
+        "Compare the code changes against the requirements of Item #{task_id} and provide a comprehensive PR review and task completion verification adhering to the following guidelines:\n\n"
+        f"{COMMON_REVIEW_PROMPT}"
     )
 
 @mcp.prompt
 def review_pr_with_description(task_description: str, source_branch: str, target_branch: str) -> str:
     return (
         "**IMPORTANT**: Ensure you navigate to the correct project root folder before running any git commands. The CLI might be opened from an outer parent folder.\n\n"
-        f"Perform a comprehensive Pull Request review for the following task:\n\n"
-        f"TASK DESCRIPTION:\n{task_description}\n\n"
         f"Review the changes between the target branch '{target_branch}' and source branch '{source_branch}' using the following git commands:\n\n"
         "CHANGED FILES:\n"
         f"!{{git diff {target_branch}...{source_branch} --name-only}}\n\n"
         "DIFF CONTENT:\n"
         f"!{{git diff {target_branch}...{source_branch}}}\n\n"
+        f"Perform a comprehensive Pull Request review for the following task:\n\n"
+        f"TASK DESCRIPTION:\n{task_description}\n\n"
         "From the diff output, filter and focus **only** on source code files (e.g., .java, .sql, .jsp , ect.) related to the project. "
         "Strictly **ignore** build artifacts (like .class, .jar), logs, documents, or IDE configuration files (like .settings, .project, .classpath).\n\n"
-        "Compare the code changes against the task requirements provided above and provide a comprehensive PR review adhering to the following guidelines:\n\n"
-        f"{COMMON_PR_REVIEW_PROMPT}"
+        "Compare the code changes against the task requirements provided above and provide a comprehensive PR review and task completion verification adhering to the following guidelines:\n\n"
+        f"{COMMON_REVIEW_PROMPT}"
+    )
+
+@mcp.prompt
+def review_commits_with_description(task_description: str, commit_hashes: str) -> str:
+    """
+    Review a set of commits based on a task description.
+    commit_hashes: A space-separated string of commit hashes (e.g. "abc1234 def5678").
+    """
+    return (
+        "**IMPORTANT**: Ensure you navigate to the correct project root folder before running any git commands. The CLI might be opened from an outer parent folder.\n\n"
+        f"Review the changes in the following commits: '{commit_hashes}' using the following git commands:\n\n"
+        "CHANGED FILES:\n"
+        f"!{{git show --name-only {commit_hashes}}}\n\n"
+        "DIFF CONTENT:\n"
+        f"!{{git show {commit_hashes}}}\n\n"
+        f"Perform a comprehensive Pull Request style review for the following task based on the provided commits:\n\n"
+        f"TASK DESCRIPTION:\n{task_description}\n\n"
+        "From the diff output, filter and focus **only** on source code files (e.g., .java, .sql, .jsp , ect.) related to the project. "
+        "Strictly **ignore** build artifacts (like .class, .jar), logs, documents, or IDE configuration files (like .settings, .project, .classpath).\n\n"
+        "Compare the code changes against the task requirements provided above and provide a comprehensive code review and task completion verification adhering to the following guidelines:\n\n"
+        f"{COMMON_REVIEW_PROMPT}"
     )
 
 
