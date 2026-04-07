@@ -81,6 +81,8 @@ C:\Users\<YourUsername>\.gemini\
 
 Once your MCP Server is running and your skills are loaded into the Gemini CLI, you can start automating your development workflow seamlessly. Because these are *Agentic Skills*, you just mention the slash command and talk naturally.
 
+> ⌨️ **Important CLI Tip:** When you type a slash command (e.g., `/Read`), the CLI will offer an autocomplete suggestion. **Press `Tab` (or `Right Arrow`)** to accept the suggestion so you can continue typing the rest of your instruction (like a Task ID). If you press `Enter`, it will immediately submit the incomplete command!
+
 ### Command Examples:
 
 #### 🔍 Code Review & Verification
